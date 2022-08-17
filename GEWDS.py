@@ -8,7 +8,7 @@ def region_dir():
     df = pd.read_json('https://eleksyonconfig2.gmanetwork.com/gno/microsites/eleksyon2019/results/ref/NO/geolocation_REGION.json')
     df = df.rename(columns={'REGION':'region_name'})
     df = df.drop(['registered_voters'], axis=1)
-    df['region_code'] = [region.replace(" ","_") for region in df['region_name']]
+    df['region_code'] = [region.replace(" ","_").replace("Ñ","_") for region in df['region_name']]
     region_dir = dict(zip(df['region_name'],df['region_code']))
     return region_dir
 
@@ -19,7 +19,7 @@ def province_dir(region):
     df = pd.read_json(f'https://eleksyonconfig2.gmanetwork.com/gno/microsites/eleksyon2019/results/ref/{ref}/geolocation_{region_code}.json')
     df = df.rename(columns={'PROVINCE':'province_name'})
     df = df.drop(['registered_voters'], axis=1)
-    df['province_code'] = [province.replace(" ","_").replace("(","_").replace(".","_").replace(")","_") for province in df['province_name']]
+    df['province_code'] = [province.replace(" ","_").replace("(","_").replace(".","_").replace(")","_").replace("Ñ","_") for province in df['province_name']]
     province_dir = dict(zip(df['province_name'],df['province_code']))
     return province_dir
 
@@ -31,7 +31,7 @@ def citymun_dir(region,province):
     df = pd.read_json(f'https://eleksyonconfig2.gmanetwork.com/gno/microsites/eleksyon2019/results/ref/{ref}/geolocation_{region_code}_{province_code}.json')
     df = df.rename(columns={'MUNICIPALITY':'citymun_name'})
     df = df.drop(['registered_voters'], axis=1)
-    df['citymun_code'] = [citymun.replace(" ","_").replace("(","_").replace(".","_").replace(")","_") for citymun in df['citymun_name']]
+    df['citymun_code'] = [citymun.replace(" ","_").replace("(","_").replace(".","_").replace(")","_").replace("Ñ","_") for citymun in df['citymun_name']]
     citymun_dir = dict(zip(df['citymun_name'],df['citymun_code']))
     return citymun_dir
 
@@ -44,7 +44,7 @@ def barangay_dir(region,province,citymun):
     df = pd.read_json(f'https://eleksyonconfig2.gmanetwork.com/gno/microsites/eleksyon2019/results/ref/{ref}/geolocation_{region_code}_{province_code}_{citymun_code}.json')
     df = df.rename(columns={'BARANGAY':'brgy_name'})
     df = df.drop(['registered_voters'], axis=1)
-    df['brgy_code'] = [barangay.replace(" ","_").replace("(","_").replace(".","_").replace(")","_") for barangay in df['brgy_name']]
+    df['brgy_code'] = [barangay.replace(" ","_").replace("(","_").replace(".","_").replace(")","_").replace("Ñ","_") for barangay in df['brgy_name']]
     barangay_dir = dict(zip(df['brgy_name'],df['brgy_code']))
     return barangay_dir
 
@@ -90,10 +90,15 @@ def main():
                 if os.path.exists(citymun_path) == False:
                     create_directory(citymun_path)        
                 if os.path.exists(f'{citymun_path}/{citymun}.json') == False:
-                    citymun_result = pd.read_json(f'{BASE_URL}/{region_code}_{province_code}_{citymun_code}.json')
-                    print(f'Getting results from {citymun}, {province}, {region}...')
-                    sleep(DOWNLOAD_DELAY)
-                    citymun_result.to_json(f'{citymun_path}/{citymun}.json', orient='records')
+                    try:
+                        citymun_result = pd.read_json(f'{BASE_URL}/{region_code}_{province_code}_{citymun_code}.json')
+                    except:
+                        print(f"{citymun_path}/{citymun}.json not found")
+                        continue
+                    else:
+                        print(f'Getting results from {citymun}, {province}, {region}...')
+                        sleep(DOWNLOAD_DELAY)
+                        citymun_result.to_json(f'{citymun_path}/{citymun}.json', orient='records')
                 else:
                     print(f"{citymun_path}/{citymun}.json exists. ")
                     
@@ -103,14 +108,19 @@ def main():
                     if os.path.exists(brgy_path) == False:
                         create_directory(brgy_path)        
                     if os.path.exists(f'{brgy_path}/{barangay}.json') == False:
-                        df = pd.read_json(f'{BASE_URL}/{region_code}_{province_code}_{citymun_code}_{brgy_code}.json')
-                        print(f'Getting results from {barangay}, {citymun}, {province}, {region}...')
-                        sleep(DOWNLOAD_DELAY)
-                        df.to_json(f'{brgy_path}/{barangay}.json', orient='records')
+                        try:
+                            brgy_result = pd.read_json(f'{BASE_URL}/{region_code}_{province_code}_{citymun_code}_{brgy_code}.json')
+                        except:
+                            print(f'{brgy_path}/{barangay}.json not found.')
+                            continue
+                        else:
+                            print(f'Getting results from {barangay}, {citymun}, {province}, {region}...')
+                            sleep(DOWNLOAD_DELAY)
+                            brgy_result.to_json(f'{brgy_path}/{barangay}.json', orient='records')
                     else:
                         print(f"{brgy_path}/{barangay}.json exists. ")
                         
     print("Download Finished!")
-
+                                  
 if __name__ == "__main__":
     main()
