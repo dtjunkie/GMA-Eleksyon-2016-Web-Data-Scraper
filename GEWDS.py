@@ -104,6 +104,7 @@ def main():
                     
                 for barangay in barangay_dir(region,province,citymun).keys():
                     brgy_code = barangay_dir(region,province,citymun).get(barangay)
+                    barangay = barangay.replace("*","_")
                     brgy_path = f"{citymun_path}/{barangay}"
                     if os.path.exists(brgy_path) == False:
                         create_directory(brgy_path)        
