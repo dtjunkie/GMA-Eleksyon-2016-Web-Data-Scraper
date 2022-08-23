@@ -44,7 +44,7 @@ def barangay_dir(region,province,citymun):
     df = pd.read_json(f'https://eleksyonconfig2.gmanetwork.com/gno/microsites/eleksyon2019/results/ref/{ref}/geolocation_{region_code}_{province_code}_{citymun_code}.json')
     df = df.rename(columns={'BARANGAY':'brgy_name'})
     df = df.drop(['registered_voters'], axis=1)
-    df['brgy_code'] = [barangay.replace("'","_").replace(",","_").replace(" ","_").replace("(","_").replace(".","_").replace(")","_").replace("Ñ","_") for barangay in df['brgy_name']]
+    df['brgy_code'] = [barangay.replace("/","_").replace("'","_").replace(",","_").replace(" ","_").replace("(","_").replace(".","_").replace(")","_").replace("Ñ","_") for barangay in df['brgy_name']]
     barangay_dir = dict(zip(df['brgy_name'],df['brgy_code']))
     return barangay_dir
 
@@ -144,7 +144,7 @@ def main():
                     
                 for barangay in barangay_dir(region,province,citymun).keys():
                     brgy_code = barangay_dir(region,province,citymun).get(barangay)
-                    barangay = barangay.replace("*","_")
+                    barangay = barangay.replace("*","_").replace("/","_")
                     brgy_path = f"{citymun_path}/{barangay}"
                     brgy_ref = brgy_code[:-3:-1]
                     if os.path.exists(brgy_path) == False:
