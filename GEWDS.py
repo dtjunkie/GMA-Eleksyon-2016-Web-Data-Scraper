@@ -31,7 +31,7 @@ def citymun_dir(region,province):
     df = pd.read_json(f'https://eleksyonconfig2.gmanetwork.com/gno/microsites/eleksyon2019/results/ref/{ref}/geolocation_{region_code}_{province_code}.json')
     df = df.rename(columns={'MUNICIPALITY':'citymun_name'})
     df = df.drop(['registered_voters'], axis=1)
-    df['citymun_code'] = [citymun.replace(" ","_").replace("(","_").replace(".","_").replace(")","_").replace("Ñ","_") for citymun in df['citymun_name']]
+    df['citymun_code'] = [citymun.replace("'","_").replace(" ","_").replace("(","_").replace(".","_").replace(")","_").replace("Ñ","_") for citymun in df['citymun_name']]
     citymun_dir = dict(zip(df['citymun_name'],df['citymun_code']))
     return citymun_dir
 
@@ -150,10 +150,14 @@ def main():
                     if os.path.exists(brgy_path) == False:
                         create_directory(brgy_path)        
                     if os.path.exists(f'{brgy_path}/GEOLOC_{barangay}.json') == False:
-                        geoloc_brgy = pd.read_json(f'{GEOLOC_URL}/ref/{brgy_ref}/geolocation_{region_code}_{province_code}_{citymun_code}_{brgy_code}.json')
-                        print(f'Getting list of precincts in {barangay}, {citymun}, {province}, {region}...')
-                        sleep(DOWNLOAD_DELAY)
-                        geoloc_brgy.to_json(f'{brgy_path}/GEOLOC_{barangay}.json', orient='records')
+                        try:
+                            geoloc_brgy = pd.read_json(f'{GEOLOC_URL}/ref/{brgy_ref}/geolocation_{region_code}_{province_code}_{citymun_code}_{brgy_code}.json')
+                        except:
+                            print(f'{brgy_path}/GEOLOC_{barangay}.json not found.')
+                        else:
+                            print(f'Getting list of precincts in {barangay}, {citymun}, {province}, {region}...')
+                            sleep(DOWNLOAD_DELAY)
+                            geoloc_brgy.to_json(f'{brgy_path}/GEOLOC_{barangay}.json', orient='records')
                     else:
                         print(f'{brgy_path}/GEOLOC_{barangay}.json exists.')
                     if os.path.exists(f'{brgy_path}/{barangay}.json') == False:
