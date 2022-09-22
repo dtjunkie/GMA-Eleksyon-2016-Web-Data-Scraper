@@ -31,7 +31,7 @@ def citymun_dir(region,province):
     df = pd.read_json(f'https://eleksyonconfig.gmanetwork.com/gno/microsites/eleksyon2016/results/ref/{ref}/geolocation_{region_code}_{province_code}.json.gz')
     df = df.rename(columns={'MUNICIPALITY':'citymun_name'})
     df = df.drop(['registered_voters'], axis=1)
-    df['citymun_code'] = [citymun.replace("'","_").replace(" ","_").replace("(","_").replace(".","_").replace(")","_").replace("Ñ","_") for citymun in df['citymun_name']]
+    df['citymun_code'] = [citymun.replace("'","_").replace(" ","_").replace("(","_").replace(".","_").replace(")","_").replace("Ñ","__") for citymun in df['citymun_name']]
     citymun_dir = dict(zip(df['citymun_name'],df['citymun_code']))
     return citymun_dir
 
@@ -182,6 +182,7 @@ def main():
                                 precinct_no += 1
                         else:
                             print(f"{brgy_path}/{precinct_no}.json exists. ")
+                            precinct_no += 1
                         
                         
     print("Download Finished!")
